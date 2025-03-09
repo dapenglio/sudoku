@@ -9,6 +9,32 @@ h1 {
     color: #333;
 }
 
+#digit-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#digit-indicator div {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#digit-indicator div.completed {
+    background-color: #e0e0e0; /* Gray out completed digits */
+    color: #888; /* Lighten the text color */
+    text-decoration: line-through; /* Add a strikethrough */
+}
+
 #sudoku-board {
     display: grid;
     grid-template-columns: repeat(9, 50px);
@@ -29,7 +55,7 @@ h1 {
     position: relative;
 }
 
-/* Add bold borders for 3x3 subgrids */
+/* Bold borders for 3x3 subgrids */
 #sudoku-board div:nth-child(3n) {
     border-right: 2px solid #000;
 }

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const board = document.getElementById('sudoku-board');
+    const digitIndicator = document.getElementById('digit-indicator').children;
     let puzzle = [];
     let solution = Array.from({ length: 9 }, () => Array(9).fill(0));
 
@@ -25,10 +26,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.addEventListener('input', (e) => {
                         const value = parseInt(e.target.value);
                         solution[i][j] = isNaN(value) ? 0 : value;
+                        checkCompletedDigits();
                     });
                     cell.appendChild(input);
                 }
                 board.appendChild(cell);
+            }
+        }
+    }
+
+    function checkCompletedDigits() {
+        const digitCounts = Array(9).fill(0); // Track counts for digits 1-9
+
+        // Count occurrences in both puzzle and solution
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                // Check puzzle (pre-filled digits)
+                if (puzzle[i][j] !== 0) {
+                    digitCounts[puzzle[i][j] - 1]++;
+                }
+                // Check solution (player's input)
+                if (solution[i][j] !== 0) {
+                    digitCounts[solution[i][j] - 1]++;
+                }
+            }
+        }
+
+        // Update the digit indicator
+        for (let i = 0; i < 9; i++) {
+            if (digitCounts[i] === 9) {
+                digitIndicator[i].classList.add('completed');
+            } else {
+                digitIndicator[i].classList.remove('completed');
             }
         }
     }

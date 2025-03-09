@@ -9,11 +9,17 @@ h1 {
     color: #333;
 }
 
-#digit-indicator {
+#game-container {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+#digit-indicator {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 #digit-indicator div {
@@ -40,8 +46,6 @@ h1 {
     grid-template-columns: repeat(9, 50px);
     grid-template-rows: repeat(9, 50px);
     gap: 1px;
-    margin: 20px auto;
-    width: max-content;
     background-color: #000;
     border: 2px solid #000;
 }
@@ -91,6 +95,12 @@ h1 {
     border: none;
     outline: none;
     background-color: transparent;
+}
+
+/* Gray out completed digits in the board */
+#sudoku-board div.completed-digit {
+    background-color: #e0e0e0; /* Gray out the cell */
+    color: #888; /* Lighten the text color */
 }
 
 button {

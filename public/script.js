@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 board.appendChild(cell);
             }
         }
+        checkCompletedDigits(); // Initial check for pre-filled digits
     }
 
     function checkCompletedDigits() {
@@ -52,14 +53,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Update the digit indicator
+        // Update the digit indicator and gray out completed digits in the board
         for (let i = 0; i < 9; i++) {
             if (digitCounts[i] === 9) {
                 digitIndicator[i].classList.add('completed');
+                grayOutCompletedDigits(i + 1); // Gray out all instances of this digit
             } else {
                 digitIndicator[i].classList.remove('completed');
+                unGrayOutDigits(i + 1); // Remove gray-out if not completed
             }
         }
+    }
+
+    function grayOutCompletedDigits(digit) {
+        const cells = board.querySelectorAll('div');
+        cells.forEach((cell) => {
+            if (cell.textContent == digit) {
+                cell.classList.add('completed-digit');
+            }
+        });
+    }
+
+    function unGrayOutDigits(digit) {
+        const cells = board.querySelectorAll('div');
+        cells.forEach((cell) => {
+            if (cell.textContent == digit) {
+                cell.classList.remove('completed-digit');
+            }
+        });
     }
 
     document.getElementById('check-solution').addEventListener('click', () => {

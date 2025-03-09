@@ -38,7 +38,7 @@ function generateSudoku() {
 function validateSudoku(puzzle, solution) {
     for (let i = 0; i < 9; i++) {
         for (let j = 0; j < 9; j++) {
-            if (puzzle[i][j] !== 0 && puzzle[i][j] !== solution[i][j]) {
+            if (solution[i][j] !== 0 && puzzle[i][j] !== solution[i][j]) {
                 return false;
             }
         }

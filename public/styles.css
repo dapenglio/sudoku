@@ -117,3 +117,17 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+/* Highlight styles */
+#sudoku-board div.highlight-row,
+#sudoku-board div.highlight-col,
+#sudoku-board div.highlight-subgrid {
+    background-color: #CCCCCC; /* Slight grey for highlighting */
+}
+
+#sudoku-board div.highlight-digit {
+    background-color: #BBBBBB; /* Slightly darker grey for the clicked digit */
+}
+#sudoku-board div.highlight-other-digit {
+    background-color: #DDDDDD; /* Grey for other digits */
+}

@@ -35,7 +35,8 @@ function generateSudoku() {
     return puzzle;
 }
 
-function validateSudoku(puzzle, solution) {
+function validateSudoku(puzzle0, solution0) {
+    /*
     for (let i = 0; i < 9; i++) {
         for (let j = 0; j < 9; j++) {
             if (solution[i][j] !== 0 && puzzle[i][j] !== solution[i][j]) {
@@ -43,20 +44,36 @@ function validateSudoku(puzzle, solution) {
             }
         }
     }
+    */
+    const solution = generateSudoku();
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            solution[i][j] += solution0[i][j];
+        }
+    }
     for (let i = 0; i < 9; i++) {
         const row = new Set();
         const col = new Set();
         const grid = new Set();
         for (let j = 0; j < 9; j++) {
-            if (solution[i][j] === 0 || row.has(solution[i][j])) return false;
+            if (solution[i][j] === 0 || row.has(solution[i][j])) {
+              console.log('Dapeng row failed', i, j, solution[i][j] );
+              return false;
+            }
             row.add(solution[i][j]);
 
-            if (solution[j][i] === 0 || col.has(solution[j][i])) return false;
+            if (solution[j][i] === 0 || col.has(solution[j][i])) {
+              console.log('Dapeng col failed', j, i, solution[j][i] );
+              return false;
+            }
             col.add(solution[j][i]);
 
             const gridRow = 3 * Math.floor(i / 3) + Math.floor(j / 3);
             const gridCol = 3 * (i % 3) + (j % 3);
-            if (solution[gridRow][gridCol] === 0 || grid.has(solution[gridRow][gridCol])) return false;
+            if (solution[gridRow][gridCol] === 0 || grid.has(solution[gridRow][gridCol])) {
+              console.log('Dapeng tile failed', gridRow, gridCol, solution[gridRow][gridCol], i, j );
+              return false;
+            }
             grid.add(solution[gridRow][gridCol]);
         }
     }

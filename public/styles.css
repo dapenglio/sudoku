@@ -9,11 +9,98 @@ h1 {
     color: #333;
 }
 
+
 #game-container {
     display: flex;
+    align-items: flex-start; /* Align everything at the top */
     justify-content: center;
+    gap: 20px; /* Space between board and right panel */
+}
+
+#sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
+    gap: 2px;
+    border: 2px solid black;
+    padding: 10px;
+}
+
+#right-panel {
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
+    gap: 10px;
+}
+
+#digit-indicator {
+    display: grid;
+    grid-template-columns: repeat(3, 40px);
+    grid-gap: 5px;
+    padding: 10px;
+    border: 1px solid black;
+}
+
+#digit-indicator div {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    cursor: pointer;
+    border: 1px solid #333;
+    background-color: lightgray;
+}
+
+#digit-indicator div:hover {
+    background-color: yellow;
+}
+
+#hint-area,
+#snapshot-list {
+    width: 200px;
+    min-height: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+}
+
+
+
+
+
+
+#game-container {
+    display: flex;
+    align-items: flex-start; /* Align all items at the top */
+    justify-content: center;
+    gap: 20px; /* Space between elements */
+}
+
+#sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
+    gap: 2px;
+    border: 2px solid black;
+    padding: 10px;
+}
+
+#right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#hint-area,
+#snapshot-list {
+    width: 200px;
+    min-height: 50px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
 }
 
 #digit-indicator {
@@ -131,3 +218,54 @@ button:hover {
 #sudoku-board div.highlight-other-digit {
     background-color: #DDDDDD; /* Grey for other digits */
 }
+
+#hint-area {
+    width: 150px;
+    min-height: 80px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-right: 20px;
+    font-size: 18px;
+}
+
+.possible-digit {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: lightgray;
+    cursor: pointer;
+}
+
+#snapshot-list {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 200px;
+    min-height: 50px;
+}
+
+.snapshot-item {
+    cursor: pointer;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+}
+
+.snapshot-item:hover {
+    background-color: #f0f0f0;
+}
+
+.snapshot-name {
+    flex-grow: 1;
+    padding: 2px;
+}
+
+.snapshot-input {
+    flex-grow: 1;
+    padding: 2px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+}
+

@@ -4,12 +4,93 @@ document.addEventListener('DOMContentLoaded', () => {
     let puzzle = [];
     let solution = Array.from({ length: 9 }, () => Array(9).fill(0));
 
-    fetch('/api/generate')
-        .then(response => response.json())
-        .then(data => {
-            puzzle = data;
-            renderBoard(puzzle);
-        });
+    // Generate the Sudoku puzzle locally
+    puzzle = generateSudoku();
+    renderBoard(puzzle);
+
+    function generateSudoku() {
+        // Hardcoded puzzle for now
+      /*
+        return [
+            [0, 0, 0, 0, 9, 0, 2, 0, 3],
+            [0, 0, 0, 0, 3, 0, 0, 0, 8],
+            [0, 0, 0, 5, 7, 4, 0, 0, 0],
+
+            [0, 0, 3, 6, 0, 0, 0, 0, 0],
+            [0, 9, 0, 0, 0, 5, 0, 0, 0],
+            [0, 2, 0, 0, 0, 0, 0, 6, 1],
+
+            [7, 0, 4, 0, 0, 0, 0, 3, 0],
+            [5, 0, 0, 9, 0, 0, 7, 0, 0],
+            [0, 0, 0, 0, 0, 0, 4, 0, 0],
+        ];
+
+    return  [
+    [5, 3, 0, 0, 7, 0, 0, 0, 0],
+    [6, 0, 0, 1, 9, 5, 0, 0, 0],
+    [0, 9, 8, 0, 0, 0, 0, 6, 0],
+    [8, 0, 0, 0, 6, 0, 0, 0, 3],
+    [4, 0, 0, 8, 0, 3, 0, 0, 1],
+    [7, 0, 0, 0, 2, 0, 0, 0, 6],
+    [0, 6, 0, 0, 0, 0, 2, 8, 0],
+    [0, 0, 0, 4, 1, 9, 0, 0, 5],
+    [0, 0, 0, 0, 8, 0, 0, 7, 9]
+]
+
+return [
+    [5, 3, 0, 0, 7, 0, 0, 0, 0],
+    [6, 0, 0, 1, 9, 5, 0, 0, 0],
+    [0, 9, 8, 0, 0, 0, 0, 6, 0],
+    [8, 0, 0, 0, 6, 0, 0, 0, 3],
+    [4, 0, 0, 8, 0, 3, 0, 0, 1],
+    [7, 0, 0, 0, 2, 0, 0, 0, 6],
+    [0, 6, 0, 0, 0, 0, 2, 8, 0],
+    [0, 0, 0, 4, 1, 9, 0, 0, 5],
+    [0, 0, 0, 0, 8, 0, 0, 7, 9]
+]
+
+return  [[1,4,0,2,0,0,0,3,7],[3,0,5,9,1,0,0,6,4],[6,0,2,3,0,0,0,0,0],[8,2,0,0,0,0,4,0,1],[0,0,6,0,0,9,7,0,3],[9,0,0,0,0,0,0,5,6],[4,5,0,6,8,2,0,7,0],[2,0,3,7,9,1,0,4,5],[0,6,0,0,5,0,0,8,0]];
+      return [[0,0,0,0,0,7,0,0,0],[0,9,0,0,0,0,0,0,7],[0,0,7,6,0,0,0,1,2],[0,0,0,0,4,5,0,0,0],[0,0,0,0,0,2,0,0,0],[0,0,0,0,0,0,0,2,0],[2,0,0,0,0,1,0,0,6],[0,0,1,0,0,4,0,0,0],[0,0,0,0,2,0,0,0,0]];
+        */
+      return [[5,9,0,1,0,0,0,0,2],[0,0,4,0,7,0,0,0,0],[0,0,0,0,0,4,0,0,0],[8,0,5,0,0,0,6,4,0],[0,7,0,8,0,0,9,5,0],[0,6,0,0,1,0,0,0,0],[0,0,0,0,0,0,0,6,9],[0,4,8,0,0,3,0,2,0],[3,0,0,0,0,0,5,0,0]]
+
+    }
+
+    function validateSudoku(puzzle0, solution0) {
+        const solution = Array.from({ length: 9 }, () => Array(9).fill(0));
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                solution[i][j] = solution0[i][j] + puzzle0[i][j];
+            }
+        }
+        for (let i = 0; i < 9; i++) {
+            const row = new Set();
+            const col = new Set();
+            const grid = new Set();
+            for (let j = 0; j < 9; j++) {
+                if (solution[i][j] === 0 || row.has(solution[i][j])) {
+                    console.log('Dapeng row failed', i, j, solution[i][j]);
+                    return false;
+                }
+                row.add(solution[i][j]);
+
+                if (solution[j][i] === 0 || col.has(solution[j][i])) {
+                    console.log('Dapeng col failed', j, i, solution[j][i]);
+                    return false;
+                }
+                col.add(solution[j][i]);
+
+                const gridRow = 3 * Math.floor(i / 3) + Math.floor(j / 3);
+                const gridCol = 3 * (i % 3) + (j % 3);
+                if (solution[gridRow][gridCol] === 0 || grid.has(solution[gridRow][gridCol])) {
+                    console.log('Dapeng tile failed', gridRow, gridCol, solution[gridRow][gridCol], i, j);
+                    return false;
+                }
+                grid.add(solution[gridRow][gridCol]);
+            }
+        }
+        return true;
+    }
 
     function renderBoard(puzzle) {
         board.innerHTML = '';
@@ -30,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.addEventListener('input', (e) => {
                         const value = parseInt(e.target.value);
                         solution[i][j] = isNaN(value) ? 0 : value;
-                      console.log('Dapeng after value change', value, solution[i][j], i, j);
+                        console.log('Dapeng after value change', value, solution[i][j], i, j);
 
                         // Immediately check for completed digits
                         checkCompletedDigits();
@@ -71,6 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const digitNumber = parseInt(digit, 10);
                     if (digit !== 0) {
                         autoFillDigit(digitNumber);
+                    } else {
+                        const possibleValues = getPossibleValues(i, j);
+                        if (possibleValues.length === 1) {
+                            const digitToFill = possibleValues[0];
+                            solution[i][j] = digitToFill;
+                            updateCell(i, j, digitToFill);
+                        }
                     }
                 });
 
@@ -87,14 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPossibleValues(row, col) {
         const possibleValues = getPossibleValues(row, col);
         const hintArea = document.getElementById('hint-area');
-        
+
         hintArea.innerHTML = ''; // Clear previous hints
-    
+
         if (possibleValues.length === 0) {
             hintArea.textContent = 'No valid moves!';
             return;
         }
-    
+
         possibleValues.forEach(digit => {
             const digitSpan = document.createElement('span');
             digitSpan.textContent = digit;
@@ -105,29 +193,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getPossibleValues(row, col) {
         const possible = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    
+
         // Remove numbers already in the row
         for (let j = 0; j < 9; j++) {
-            possible.delete( puzzle[row][j] || solution[row][j] );
+            possible.delete(puzzle[row][j] || solution[row][j]);
         }
-//      console.log('Dapeng, get possible values', 'after filtering row', possible);
-    
+        // console.log('Dapeng, get possible values', 'after filtering row', possible);
+
         // Remove numbers already in the column
         for (let i = 0; i < 9; i++) {
-            possible.delete( puzzle[i][col] || solution[i][col] );
+            possible.delete(puzzle[i][col] || solution[i][col]);
         }
-//      console.log('Dapeng, get possible values', 'after filtering column', possible);
-    
+        // console.log('Dapeng, get possible values', 'after filtering column', possible);
+
         // Remove numbers in the 3x3 subgrid
         const startRow = Math.floor(row / 3) * 3;
         const startCol = Math.floor(col / 3) * 3;
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                possible.delete( puzzle[startRow + i][startCol + j] || solution[startRow + i][startCol + j] );
+                possible.delete(puzzle[startRow + i][startCol + j] || solution[startRow + i][startCol + j]);
             }
         }
-//      console.log('Dapeng, get possible values', 'after filtering tile', possible);
-    
+        // console.log('Dapeng, get possible values', 'after filtering tile', possible);
+
         return Array.from(possible);
     }
 
@@ -176,13 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     emptyCells.push({ row: i, col: j });
                 }
             }
-          console.log('Dapeng check row ', i, emptyCells )
+            console.log('Dapeng check row ', i, emptyCells);
             if (emptyCells.length === 1) {
                 const { row, col } = emptyCells[0];
-                toFillCells.push( { row, col } );
-                rowCandidates.add( JSON.stringify( { row, col } ) )
-                //solution[row][col] = digit;
-                //updateCell(row, col, digit);
+                toFillCells.push({ row, col });
+                rowCandidates.add(JSON.stringify({ row, col }));
+                // solution[row][col] = digit;
+                // updateCell(row, col, digit);
+
             }
         }
 
@@ -197,14 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     emptyCells.push({ row: i, col: j });
                 }
             }
-          console.log('Dapeng check column ', j, emptyCells )
+            console.log('Dapeng check column ', j, emptyCells);
             if (emptyCells.length === 1) {
                 const { row, col } = emptyCells[0];
-                colCandidates.add( JSON.stringify( { row, col } ) )
-                toFillCells.push( { row, col } );
-                //solution[row][col] = digit;
-                //updateCell(row, col, digit);
+                colCandidates.add(JSON.stringify({ row, col }));
+                toFillCells.push({ row, col });
             }
+            //solution[row][col] = digit;
+            //updateCell(row, col, digit);
         }
 
         // Check 3x3 subgrids
@@ -223,30 +312,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 }
-          //console.log('Dapeng check tile ', gridRow, gridCol, emptyCells )
+                //console.log('Dapeng check tile ', gridRow, gridCol, emptyCells )
                 if (emptyCells.length === 1) {
                     const { row, col } = emptyCells[0];
+                    toFillCells.push({ row, col });
                     //tileCandidates.add( JSON.stringify( { row, col } ) )
-                    toFillCells.push( { row, col } );
                     //solution[row][col] = digit;
                     //updateCell(row, col, digit);
                 }
             }
         }
 
-        for ( const { row, col } of toFillCells ) {
-            solution[row][col] = digit;
-            updateCell(row, col, digit);
-        }
         /*
-        const setRC = new Set( [...rowCandidates].filter(cell => rowCandidates.has(cell)));
-        //const setRCT = new Set( [...setRC].filter(cell => tileCandidates.has(cell)));
-        for (const rc of setRC) {
-            const { row, col } = JSON.parse(rc)
+-        const setRC = new Set( [...rowCandidates].filter(cell => rowCandidates.has(cell)));
+-        //const setRCT = new Set( [...setRC].filter(cell => tileCandidates.has(cell)));
+-        for (const rc of setRC) {
+-            const { row, col } = JSON.parse(rc)
+*/
+        for (const { row, col } of toFillCells) {
             solution[row][col] = digit;
             updateCell(row, col, digit);
         }
-        */
     }
 
     function updateCell(row, col, digit) {
@@ -265,14 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeAllHighlights() {
         const cells = board.querySelectorAll('div');
         cells.forEach((cell) => {
-          if ( ! cell.textContent || cell.textContent === '0' )
-            cell.classList.remove(
-                'highlight-row',
-                'highlight-col',
-                'highlight-subgrid',
-                'highlight-digit',
-                'highlight-other-digit'
-            );
+            if (!cell.textContent || cell.textContent === '0') {
+                cell.classList.remove(
+                    'highlight-row',
+                    'highlight-col',
+                    'highlight-subgrid',
+                    'highlight-digit',
+                    'highlight-other-digit'
+                );
+            }
         });
     }
 
@@ -364,17 +451,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const snapshotNames = []; // Stores snapshot names
 
     document.getElementById('snapshot-btn').addEventListener('click', saveSnapshot);
-    
+
     function saveSnapshot() {
         // Deep copy the solution array
         const snapshot = solution.map(row => [...row]);
-      console.log('Dapeng solution', solution);
-      console.log('Dapeng snapshot', snapshot);
+        console.log('Dapeng solution', solution);
+        console.log('Dapeng snapshot', snapshot);
         snapshots.push(snapshot);
 
         const defaultName = `Snapshot ${snapshots.length + 1}`; // Default name
         snapshotNames.push(defaultName);
-        
+
         // Update snapshot list
         updateSnapshotList();
     }
@@ -382,44 +469,44 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSnapshotList() {
         const snapshotList = document.getElementById('snapshot-list');
         snapshotList.innerHTML = ''; // Clear previous list
-    
+
         snapshots.forEach((snapshot, index) => {
             const snapshotItem = document.createElement('div');
             snapshotItem.classList.add('snapshot-item');
-    
+
             const nameSpan = document.createElement('span');
             nameSpan.textContent = snapshotNames[index];
             nameSpan.classList.add('snapshot-name');
             nameSpan.setAttribute('data-index', index);
-    
+
             nameSpan.addEventListener('click', () => renameSnapshot(index, nameSpan));
-    
+
             snapshotItem.appendChild(nameSpan);
-    
+
             // Double-click restores snapshot
             snapshotItem.addEventListener('dblclick', () => restoreSnapshot(index));
-    
+
             snapshotList.appendChild(snapshotItem);
         });
     }
-    
+
     function renameSnapshot(index, nameSpan) {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = snapshotNames[index];
         input.classList.add('snapshot-input');
-    
+
         // Replace the name span with the input field
         nameSpan.replaceWith(input);
         input.focus();
-    
+
         // Save name when Enter is pressed or input loses focus
         function saveName() {
             const newName = input.value.trim() || snapshotNames[index]; // Keep old name if empty
             snapshotNames[index] = newName;
             updateSnapshotList(); // Refresh the list
         }
-    
+
         input.addEventListener('blur', saveName);
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') saveName();
@@ -428,11 +515,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function restoreSnapshot(index) {
         if (index < 0 || index >= snapshots.length) return;
-    
+
         // Restore the solution array
         solution = snapshots[index].map(row => [...row]);
-      console.log('Dapeng restore solution', solution);
-    
+        console.log('Dapeng restore solution', solution);
+
         // Re-render the board with the restored solution
         renderBoard(puzzle);
         updateSnapshotList();
@@ -453,15 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('check-solution').addEventListener('click', () => {
-        fetch('/api/validate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ puzzle, solution })
-        })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.valid ? 'Correct solution!' : 'Incorrect solution. Try again.');
-            });
+        const isValid = validateSudoku(puzzle, solution);
+        alert(isValid ? 'Correct solution!' : 'Incorrect solution. Try again.');
     });
 });
-

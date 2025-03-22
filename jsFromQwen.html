@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudoku Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(9, 40px);
+      grid-gap: 2px;
+    }
+    .cell {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      line-height: 40px;
+      border: 1px solid #ccc;
+      font-size: 18px;
+    }
+    .empty {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sudoku Puzzle Generator</h1>
+  <label for="difficulty">Select Difficulty:</label>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+    <option value="very_hard">Very Hard</option>
+  </select>
+  <button onclick="generateSudoku()">Generate Sudoku</button>
+  <div class="grid" id="sudokuGrid"></div>
+
+  <script>
+    function generateFullSudoku() {
+      const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      function isValid(row, col, num) {
+        // Check row and column
+        for (let i = 0; i < 9; i++) {
+          if (grid[row][i] === num || grid[i][col] === num) return false;
+        }
+        // Check 3x3 subgrid
+        const startRow = Math.floor(row / 3) * 3;
+        const startCol = Math.floor(col / 3) * 3;
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            if (grid[startRow + r][startCol + c] === num) return false;
+          }
+        }
+        return true;
+      }
+
+      function solve() {
+        for (let row = 0; row < 9; row++) {
+          for (let col = 0; col < 9; col++) {
+            if (grid[row][col] === 0) {
+              shuffleArray(numbers);
+              for (const num of numbers) {
+                if (isValid(row, col, num)) {
+                  grid[row][col] = num;
+                  if (solve()) return true;
+                  grid[row][col] = 0; // Backtrack
+                }
+              }
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      solve();
+      return grid;
+    }
+
+    function removeClues(grid, difficulty) {
+      const cluesToRemove = {
+        easy: 40,
+        medium: 50,
+        hard: 60,
+        very_hard: 64,
+      };
+      let numToRemove = cluesToRemove[difficulty];
+      console.log('Dapeng to remove', numToRemove);
+      const positions = [];
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          positions.push([row, col]);
+        }
+      }
+      shuffleArray(positions);
+
+//      while ( numToRemove > 0 ) {
+      for (const [row, col] of positions) {
+        if (numToRemove <= 0) break;
+        const backup = grid[row][col];
+//        if ( backup === 0 ) continue
+        grid[row][col] = 0;
+
+        const gridCopy = grid.map(  row => row.slice() )
+        if (!hasUniqueSolution(gridCopy)) {
+          grid[row][col] = backup; // Restore if uniqueness is lost
+        } else {
+          numToRemove--;
+          console.log(`Dapeng at ${row}, ${col}   removed ${backup}`, numToRemove )
+        }
+      }
+//      }
+      console.log( 'return', JSON.stringify(grid));
+      return grid;
+    }
+
+    function hasUniqueSolution(grid) {
+      let solutions = 0;
+
+      function solve(row, col) {
+        if (row === 9) {
+          solutions++;
+          return solutions > 1; // Stop if more than one solution is found
+        }
+
+        const nextRow = col === 8 ? row + 1 : row;
+        const nextCol = col === 8 ? 0 : col + 1;
+
+        if (grid[row][col] !== 0) {
+          return solve(nextRow, nextCol);
+        }
+
+        for (let num = 1; num <= 9; num++) {
+          if (isValid(row, col, num, grid)) {
+            grid[row][col] = num;
+            if (solve(nextRow, nextCol)) return true;
+            grid[row][col] = 0; // Backtrack
+          }
+        }
+        return false;
+      }
+
+      solve(0, 0);
+      return solutions === 1;
+    }
+
+    function isValid(row, col, num, grid) {
+      // Check row and column
+      for (let i = 0; i < 9; i++) {
+        if (grid[row][i] === num || grid[i][col] === num) return false;
+      }
+      // Check 3x3 subgrid
+      const startRow = Math.floor(row / 3) * 3;
+      const startCol = Math.floor(col / 3) * 3;
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          if (grid[startRow + r][startCol + c] === num) return false;
+        }
+      }
+      return true;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function generateSudoku() {
+      const difficulty = document.getElementById("difficulty").value;
+      const fullGrid = generateFullSudoku();
+      const puzzleGrid = removeClues(fullGrid.map(row => [...row]), difficulty);
+      //console.log( puzzleGrid.forEach( row => { return '[', row.join(','), ']' } ).join(',\n') )
+      //console.log(`[${puzzleGrid.toString()}]`); // from gemini // [1,2,4,0,0,9,6,0,0,0,0,7,1,0,0,0,0,0,8,6,9,2,0,5,0,4,7,7,8,0,0,0,4,2,6,0,3,0,5,6,1,2,0,0,0,0,0,0,8,7,0,5,0,0,2,0,8,4,0,1,3,0,0,9,0,0,0,2,0,4,0,1,0,0,3,5,0,0,7,2,6]
+      //console.log(JSON.stringify(puzzleGrid));
+
+      const sudokuGridElement = document.getElementById("sudokuGrid");
+      sudokuGridElement.innerHTML = "";
+      puzzleGrid.forEach(row => {
+        row.forEach(cell => {
+          const cellDiv = document.createElement("div");
+          cellDiv.className = "cell";
+          if (cell === 0) {
+            cellDiv.classList.add("empty");
+            cellDiv.textContent = "";
+          } else {
+            cellDiv.textContent = cell;
+          }
+          sudokuGridElement.appendChild(cellDiv);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

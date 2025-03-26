@@ -118,8 +118,10 @@ function solveAndCount(grid, solutions) {
     solutions.push(JSON.stringify(grid)); // Store the solution
 }
 
-const puzzle = generateSudokuPuzzle('medium');
-console.log(puzzle);
+//const puzzle = generateSudokuPuzzle('medium');
+const puzzle = generateSudokuPuzzle('hard');
+//console.log(puzzle);
+console.log(JSON.stringify(puzzle));
 
-renderBoard(puzzle);
+//renderBoard(puzzle);
 

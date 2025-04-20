@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.addEventListener('input', (e) => {
                         const value = parseInt(e.target.value);
                         solution[i][j] = isNaN(value) ? 0 : value;
-                        console.log('Dapeng after value change', value, solution[i][j], i, j);
+                        //console.log('Dapeng after value change', value, solution[i][j], i, j);
 
                         // Immediately check for completed digits
                         checkCompletedDigits();
@@ -224,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         removeAllHighlights();
                         showPossibleValues(i, j);
                     }
+                    for (let i = 0; i < digitIndicator.length; i++) {
+                      digitIndicator[i].style.backgroundColor = '';
+                    }
                 });
 
                 cell.addEventListener('mouseover', () => {
@@ -240,12 +243,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const digitNumber = parseInt(digit, 10);
                     if (digit !== 0) {
                         autoFillDigit(digitNumber);
+                        for (let i = 0; i < digitIndicator.length; i++) {
+                          digitIndicator[i].style.backgroundColor = '';
+                        }
+                        digitIndicator[ digitNumber - 1 ].style.backgroundColor = 'yellow';
                     } else {
                         const possibleValues = getPossibleValues(i, j);
                         if (possibleValues.length === 1) {
                             const digitToFill = possibleValues[0];
                             solution[i][j] = digitToFill;
                             updateCell(i, j, digitToFill);
+                            for (let i = 0; i < digitIndicator.length; i++) {
+                              digitIndicator[i].style.backgroundColor = '';
+                            }
+                            digitIndicator[ digitNumber - 1 ].style.backgroundColor = 'yellow';
                         }
                     }
                 });
@@ -618,6 +629,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const digit = i + 1; // Digits are 1-based
             removeAllHighlights();
             highlightAllOccurrences(digit);
+            for (let i = 0; i < digitIndicator.length; i++) {
+              digitIndicator[i].style.backgroundColor = '';
+            }
+            digitIndicator[i].style.backgroundColor = 'yellow';
         });
         digitIndicator[i].addEventListener('dblclick', () => {
             const digit = i + 1; // Digits are 1-based

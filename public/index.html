@@ -324,8 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Convert digit to a number
         const digitNumber = parseInt(digit, 10);
+        let possibleCells = [];
 
-        // Highlight all occurrences of the digit
+        // Highlight all occurrences of the digit and collect possible positions
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const cell = board.children[i * 9 + j];
@@ -334,20 +335,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cellValue === digitNumber) {
                     // Highlight the clicked digit
                     cell.classList.add('highlight-digit');
-
-                    // Highlight the row, column, and 3x3 subgrid for this occurrence
                     highlightRow(i);
                     highlightColumn(j);
                     highlightSubgrid(i, j);
                 } else if (cellValue !== 0) {
                     // Highlight other digits
                     cell.classList.add('highlight-other-digit');
+                } else {
+                    // Check if this cell is a possible position
+                    const possibleValues = getPossibleValues(i, j);
+                    if (possibleValues.includes(digitNumber)) {
+                        possibleCells.push({row: i, col: j, cell: cell});
+                        cell.style.backgroundColor = 'white';
+                    }
                 }
             }
         }
 
+        // Check for single possible positions in rows, columns and subgrids
+        highlightUniquePossiblePositions(possibleCells, digitNumber);
         // Auto-fill cells where the digit must go
         //autoFillDigit(digitNumber);
+    }
+
+    function highlightUniquePossiblePositions(possibleCells, digit) {
+        for (let row = 0; row < 9; row++) {
+            const rowCells = possibleCells.filter(cell => cell.row === row);
+            if (rowCells.length === 1) {
+                highlightCellBorders(rowCells[0], 'row');
+            }
+        }
+        for (let col = 0; col < 9; col++) {
+            const colCells = possibleCells.filter(cell => cell.col === col);
+            if (colCells.length === 1) {
+                highlightCellBorders(colCells[0], 'col');
+            }
+        }
+        for (let gridRow = 0; gridRow < 3; gridRow++) {
+            for (let gridCol = 0; gridCol < 3; gridCol++) {
+                const subgridCells = possibleCells.filter(cell =>
+                    Math.floor(cell.row / 3) === gridRow &&
+                    Math.floor(cell.col / 3) === gridCol
+                );
+                if (subgridCells.length === 1) {
+                    highlightCellBorders(subgridCells[0], 'subgrid');
+                }
+            }
+        }
+    }
+
+    function highlightCellBorders(cellInfo, type) {
+        const {cell, row, col} = cellInfo;
+        if (type === 'row' || type === 'all') {
+            cell.style.borderTop = '2px solid yellow';
+            cell.style.borderBottom = '2px solid yellow';
+        }
+        if (type === 'col' || type === 'all') {
+            cell.style.borderLeft = '2px solid yellow';
+            cell.style.borderRight = '2px solid yellow';
+        }
+        if (type === 'subgrid' || type === 'all') {
+            // Highlight subgrid borders
+            if (row % 3 === 0) cell.style.borderTop = '2px solid yellow';
+            if (row % 3 === 2) cell.style.borderBottom = '2px solid yellow';
+            if (col % 3 === 0) cell.style.borderLeft = '2px solid yellow';
+            if (col % 3 === 2) cell.style.borderRight = '2px solid yellow';
+        }
     }
 
     function autoFillDigit(digit) {
@@ -427,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 -        //const setRCT = new Set( [...setRC].filter(cell => tileCandidates.has(cell)));
 -        for (const rc of setRC) {
 -            const { row, col } = JSON.parse(rc)
+-        }
 */
         for (const { row, col } of toFillCells) {
             solution[row][col] = digit;
@@ -450,6 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeAllHighlights() {
         const cells = board.querySelectorAll('div');
         cells.forEach((cell) => {
+            cell.style.borderTop = '';
+            cell.style.borderBottom = '';
+            cell.style.borderLeft = '';
+            cell.style.borderRight = '';
+            cell.style.backgroundColor = '';
             if (!cell.textContent || cell.textContent === '0') {
                 cell.classList.remove(
                     'highlight-row',
@@ -503,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (puzzle[i][j] !== 0) {
                     digitCounts[puzzle[i][j] - 1]++;
                 }
-                // Check solution (player's input)
+                // Check solution (players input)
                 if (solution[i][j] !== 0) {
                     digitCounts[solution[i][j] - 1]++;
                 }
@@ -546,8 +605,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const snapshots = []; // Stack to store snapshots
-    const snapshotNames = []; // Stores snapshot names
+    let snapshots = []; // Stack to store snapshots
+    let snapshotNames = []; // Stores snapshot names
 
     document.getElementById('snapshot-btn').addEventListener('click', saveSnapshot);
 
@@ -646,6 +705,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const isValid = validateSudoku(puzzle, solution);
         alert(isValid ? 'Correct solution!' : 'Incorrect solution. Try again.');
     });
+
+    document.getElementById('new-game').addEventListener('click', startNewGame);
+    function startNewGame() {
+        const difficulty = 'hard'; // Default or get from UI
+
+        // Generate new puzzle
+        puzzle = generateSudoku(difficulty);
+        solution = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+        // Clear any existing highlights/snapshots
+        removeAllHighlights();
+        snapshots = [];
+        snapshotNames = [];
+        updateSnapshotList();
+
+        // Render the new board
+        renderBoard(puzzle);
+
+        // Reset digit indicator highlights
+        for (let i = 0; i < digitIndicator.length; i++) {
+            digitIndicator[i].style.backgroundColor = '';
+            digitIndicator[i].classList.remove('completed');
+        }
+
+        // If you implement a timer, you would reset it here
+        // stopTimer();
+        // startTimer();
+    }
 });
 </script>
 <style>
@@ -716,11 +803,6 @@ h1 {
     border: 1px solid #ccc;
     background-color: #f9f9f9;
 }
-
-
-
-
-
 
 #game-container {
     display: flex;
@@ -896,6 +978,15 @@ button:hover {
     min-height: 50px;
 }
 
+#new-game {
+    margin-right: 10px;
+    background-color: #4CAF50; /* Green color for new game */
+}
+
+#new-game:hover {
+    background-color: #45a049;
+}
+
 .snapshot-item {
     cursor: pointer;
     padding: 5px;
@@ -946,6 +1037,7 @@ button:hover {
         </div>
     </div>
 
+    <button id="new-game">New Game</button>
     <button id="check-solution">Check Solution</button>
     
 </body>

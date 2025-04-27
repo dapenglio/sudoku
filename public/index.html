@@ -10,10 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const digitIndicator = document.getElementById('digit-indicator').children;
     let puzzle = [];
     let solution = Array.from({ length: 9 }, () => Array(9).fill(0));
+    let startTime;
+    let timerInterval;
+    let isTimerRunning = false;
 
     // Generate the Sudoku puzzle locally
     puzzle = generateSudoku();
     renderBoard(puzzle);
+    startTimer();
 
     function generateSudoku() {
       function generateCompleteSudoku() {
@@ -703,12 +707,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('check-solution').addEventListener('click', () => {
         const isValid = validateSudoku(puzzle, solution);
-        alert(isValid ? 'Correct solution!' : 'Incorrect solution. Try again.');
+        //alert(isValid ? 'Correct solution!' : 'Incorrect solution. Try again.');
+        if (isValid) {
+            stopTimer();
+            const time = document.getElementById('timer').textContent;
+            alert(`Correct solution! Time: ${time}`);
+        } else {
+            alert('Incorrect solution. Try again. Clock is ticking...');
+        }
     });
 
     document.getElementById('new-game').addEventListener('click', startNewGame);
     function startNewGame() {
-        const difficulty = 'hard'; // Default or get from UI
+        //const difficulty = 'hard'; // Default or get from UI
+        const difficulty = document.getElementById('difficulty').value;
+
 
         // Generate new puzzle
         puzzle = generateSudoku(difficulty);
@@ -729,10 +742,39 @@ document.addEventListener('DOMContentLoaded', () => {
             digitIndicator[i].classList.remove('completed');
         }
 
-        // If you implement a timer, you would reset it here
-        // stopTimer();
-        // startTimer();
+        document.getElementById('hint-area').innerHTML = '';
+        startTimer();
     }
+
+    function startTimer() {
+        stopTimer();
+        startTime = Date.now();
+        isTimerRunning = true;
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+    }
+
+    function updateTimerDisplay() {
+        if (!isTimerRunning) return;
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+        document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+    }
+
+    function getCurrentTime() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        return {
+            minutes: Math.floor(elapsed / 60),
+            seconds: elapsed % 60
+        };
+    }
+
+    startTimer();
 });
 </script>
 <style>
@@ -980,7 +1022,7 @@ button:hover {
 
 #new-game {
     margin-right: 10px;
-    background-color: #4CAF50; /* Green color for new game */
+    background-color: #4CAF50;
 }
 
 #new-game:hover {
@@ -1010,11 +1052,40 @@ button:hover {
     font-size: 16px;
     border: 1px solid #ccc;
 }
+
+.difficulty-selector {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.difficulty-selector select {
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+#timer {
+    margin-left: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
 </style>
 </head>
 <body>
     <h1>Sudoku Game</h1>
-    
+
+    <div class="difficulty-selector">
+        <label for="difficulty">Difficulty: </label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard" selected>Hard</option>
+        </select>
+        <span id="timer">00:00</span>
+    </div>
+
     <div id="game-container">
         <div id="sudoku-board"></div>
 

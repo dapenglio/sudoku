@@ -75,7 +75,13 @@ GET georgew
 COMMIT
 ```
 
----
+## Run test
+An empty server must be running to enable the integration tests inside the code.
+```bash
+python3 test.py
+```
+
+
 ## Development notes
 
 _Note:  some assumptions or requirements have been deliberately omitted from the instructions.  Please take note of any assumptions you make in your solution, along with the rationale for taking those decisions – include such notes in the README.md file._

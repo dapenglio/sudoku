@@ -4,6 +4,9 @@ import socket
 import threading
 
 class KeyValueStore:
+    '''
+    A simple in-memory key-value store with thread-safe operations that maintains the original kv vlues
+    '''
     def __init__(self):
         self.store = {}
         self.lock = threading.Lock()
@@ -26,7 +29,7 @@ class Transaction:
         self.active = False
         self.changes = {}
 
-    def begin(self):
+    def start(self):
         if self.active:
             return False  # Embedded transactions not supported
         self.active = True
@@ -74,6 +77,7 @@ def handle_client(conn, addr, kv_store):
                 if not data:
                     break
                 command = data.decode('utf-8').strip()
+                #unstructured string parsing is not easy; here we assume both key and value have no spaces
                 cmd, key, value = (re.split(r'\s+', command, 2) + [None, None, None])[:3] # this is a hack to make sure we have 3 variables
                 if not cmd:
                     continue
@@ -122,7 +126,7 @@ def handle_client(conn, addr, kv_store):
                     if key is not None or value is not None:
                         conn.sendall(b'{"status": "Error", "mesg": "START command should have no argument"}\n')
                         continue
-                    if transaction.begin():
+                    if transaction.start():
                         conn.sendall(b'{"status": "Ok"}\n')
                     else:
                         conn.sendall(b'{"status": "Error", "mesg": "TRANSACTION ALREADY ACTIVE, still use it"}\n')

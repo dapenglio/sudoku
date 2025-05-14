@@ -80,62 +80,56 @@ COMMIT
 
 _Note:  some assumptions or requirements have been deliberately omitted from the instructions.  Please take note of any assumptions you make in your solution, along with the rationale for taking those decisions – include such notes in the README.md file._
 
+A KV store can be implemented using various data structures, B tree, skip list, etc, we may even use a RDBMS underneath. Here I chose dictionary/hash table to implement it.
 
-A KV store can be implemented using various data structures, B tree, skip list, etc, we may even use a RDBMS underneath.
-There is no requirements of work load, number of kv pairs, traffic of the requests, etc. They are critical factors.
+Some high performance kv stores are free and avaiable, some are even open sourced, we may use them or modify the source code to fit our needs.
 
-Some high performance cache are free and on the shelf, may we use them? If it is open sourced, we may even modify the source code to fit our needs.
-We may implement or use an open source tool, either way, we have to understand our application scenarios and maintain the execution, let the software run in a healthy environment.
+Either way, we have to understand our application scenarios and maintain the execution, let the software run in a healthy environment.
 
-Here are a list of concerns we have in a production environment:
-- to use hashtable, we better keep load factor under 70%. (Remember to factor in data growth in the production environment.)
-- We don't persistence data to disk. This implies that we can tolerate data loss.
+### Concerns in a production environment
+- There is no requirements of work load, number of kv pairs, traffic of the requests, etc. They are critical design factors.
+- If we use a hashtable, we better keep load factor under 70%. (Remember to factor in data growth in the production environment.)
+- We don't persistence data to disk. In the future, what if we have to make the datastore larger? How to migrate the data? I assume we can tolerate data loss.
 - If the data is too large and we may partition the data into multi datastores. Partitioning may work naturally with Haus.
-- Since the content does not have Time To Live (TTL), its memory footprint won't reduce if we don't run DEL.
+- Since keys do not have Time To Live (TTL), its memory footprint won't reduce if we don't run DEL.
 - It may run out of memory (OOM) and get killed by operation system, if the data size keeps growing.
 - Is there a time gap in which we can restart the kv store, to clean up the memory, say, in midnights?
-- In the future, what if we have to make the datastore larger? How to migrate the data?
 
-(I have started multi Redis instances on a computer that had multi cpu cores before Redis cluster appeared
- I happened to found an ancient benchmark that I did on a group of Redis that ran on one single computer, however I have forgot the details of the setup. https://github.com/dapenglio/py-hash shows that Redis ran well on multiple CPU cores on a single computer.)
+### Multi threading
+- The requirement of supporting multiple clients means multi threads and concurrency control.
+- Python has GIL. A online search returned that Python dict is not thread safe. I explicitly sync operations on it.
+- We could fine tune the granularity of the concurrency control, say, a transaction on key `a` does not interfere with another transaction on key `b` . For this coding assignment, I lock the whole dict. No premature optimization.
 
+### Exception control
+- If one PUT fails, we should rollback all other PUTs? Eg, if we buffer many PUTs in a transaction which uses up the memory, some PUTs will succeed but some others will fail.
+- Don't consider this scenario, because a hash table already has too many collisions and the performance becomes terrible. This should not happen in a good production environment.
+- Even if we try, we cannot guarantee rollback always succeeds, because the memory could be used up by another client at the time.
 
-- The requirement of supporting multiple clients means multi threads and concurrency control
-- Python has GIL, javascript is single threaded in nature... A online search returned that Python dict is not thread safe. I explicitly sync operations on it.
-- atomic transaction, means that we have to lock other reads and writes
--- we may fine tune the granularity of the concurrency control, say, a transaction on key `a` does not interfere with another transaction on key `b` . For this coding assignment, I lock the whole dict. Don't try to optimize too early.
-I have to admit that I am not familiar with Python locks.
+### Encoding and communication
+- TCP transfers bytes. UTF8 rendering can be a visual issue, e.g., `\u8bf4` is Chinese character `说`. Since Haus is an international company, font rendering/locale is important. Luckily, rest assured, there is no data loss.
+- since responses are in JSON format, to make the server work for a program client, we have to escape values. I choose `json.dumps()`.
 
-Exception control; if one PUT fails, we should rollback all other PUTs ?
--- e.g., if we buffer many PUTs in a transaction which uses up the memory, some PUTs will succeed but some others will fail.
--- Don't consider this scenario, because a hash table already has too many collisions and the performance becomes terrible. This should not happen in a good production environment.
--- Even if we try, we cannot guarantee rollback always succeed, because the memory could be used up by another client at the time.
+### Docker and port
+- If we will put the code in a docker, the listening port does not matter. To make test easier, I hard coded 9888 in the code.
 
-- all commands and server responses will be assumed to be encoded as UTF8 strings. Fine, as in TCP they are all bytes, UTF encoding is for rendering
-- Font rendering can be a visual issue, e.g., `\u8bf4` for Chinese character `说`. Since Haus is an international company, font rendering is important. Luckily, rest assured, there is no data loss.
-- since responses are in JSON format, to make the server work for a program client, we have to encode values. I choose `json.dumps()`.
-- 
-- if we will put the code in a docker, the listening port does not matter. To make test easier, I hard coded 9888 in the code.
-- del is a Python reserved keyword, so in the code I use delete
-- We read this as "make sure the key is not in the store", so we don't raise an error if the key is not found.
-This is a no-op if the key is not found.
-
+### Misc
+- del is a Python reserved keyword, so in the code I use delete. I read it as "make sure the key is not in the store", so we don't raise an error if the key is not found, we treat it as a no-op.
 – if the client buffers transaction context before seeing COMMIT when the transaction is sent to the server, the server can handle all requests atomically
 
 ---
 
+## Project Development Plan
 After thinking over these details, I thought about how to implement the project.
 
-There are the major steps:
+### Major steps
 1. Create a server that can cater multi clients, this is a standard boilerplate
 2. Create a Docker, a boilerplate too (we may use docker-compose to define network ports)
 3. Implement the key-value datastore, which is the core, consisting of a globle singleton dict. Make it easy for unit test.
 4. Implement a driver that translates text command to method calls and wrap up responses in JSON format
 5. Test
-   5.1 for boilerplates, we manually test them along with the development
-   5.2 for the kv store, we need test its input, output, execution logic, etc.
-     5.2.1 we can even simulate the concurrent clients
-   5.3 integration test, we'd better test in a near production environment, and using multiple threads
+   1. for boilerplates, we manually test them along with the development
+   2. for the kv store, we need test its input, output, execution logic, etc.
+   3. integration test, in a near production environment, and using multiple threads
 
 My development followed these big steps.
-For a big project in real life, we may divide it to parallel parts and assign them to multiple engineers.
+For a big project in real life, it often makes sense to split these tasks into parallel workstreams and assign them to different engineers to accelerate delivery.
